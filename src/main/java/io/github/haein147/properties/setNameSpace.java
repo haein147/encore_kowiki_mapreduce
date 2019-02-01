@@ -3,13 +3,11 @@ package io.github.haein147.properties;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +25,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 ;
 
+
+//ns.properties 과 pagelinks.tsv / redirect.tsv를 맵사이드 조인하는 클래스
 public class setNameSpace extends Configured implements Tool {
     public static void main(String[] args) throws Exception {
         ToolRunner.run(new setNameSpace(), args);
@@ -56,49 +56,45 @@ public class setNameSpace extends Configured implements Tool {
 	}
 	public static class nsMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String fromLink = new String();
-        Map<Integer, String> nsAndTitle = new HashMap<>();
-
+        Map<String, String> nsAndTitle = new HashMap<>();
+        private Text outKey = new Text();
+		private Text outValue = new Text();
 		@Override
 		public void setup(Context context) throws IOException, InterruptedException{
-			File f = new File("./ns");
-            BufferedReader in = new BufferedReader(new FileReader(context.getCacheFiles()[0].toString()));
+			File f = new File("ns");
+	        FileInputStream fis = new FileInputStream(f);
+            BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+            
             for (String line : IOUtils.readLines(in)) {
             	//-1=특수
+            	//0=\s
             	String[] split = line.split("=");
-                int id = Integer.parseInt(split[0]);
-                String title = split[1];
-                nsAndTitle.put(id, title);
+                String ns = split[0];
+                String name = split[1];
+                nsAndTitle.put(ns, name);
 			}
 		}
-		
-		@SuppressWarnings("unlikely-arg-type")
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-			//123	11	환영합니다
-			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
-			//String fileName = "/ns.properties";
-	        //InputStream is = setNameSpace.class.getResourceAsStream(fileName);
-	        //BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-	        
 			
-			//Configuration conf  = new Configuration();
-	        //String filePath = "/ns.properties";
-	        //Path path = new Path(filePath);
-	        //FileSystem fs = path.getFileSystem(conf);
-			//hdfs://ip-172-26-13-65.ap-northeast-2.compute.internal:8020
+			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
 
-	      //123	환영합니다	11
+			//123	환영합니다	11	-> 123	틀토론:환영합니다
+			//142	환영합니다	2	-> 143	사용자:환영합니다 
 			String id = parts[0];
 			String title = parts[1];
 			String namespace = parts[2];
+			System.out.printf("##### : %s, %s, %s",id,title,namespace);
 			String ns = nsAndTitle.get(namespace);
-			if(ns.isEmpty()){
-				fromLink = title;
+			if(ns.equals(" ")){
+				outKey.set(id);
+				outValue.set(title);
 			}else {
-				fromLink = ns + ":" + title; //사용자:환영합니다
+				//사용자:환영합니다
+				outKey.set(id);
+				outValue.set(ns + ":" + title);
 			}
-			
-			context.write(new Text(id), new Text(fromLink));
+			context.write(outKey, outValue);
 		}
 	}
 
