@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -13,18 +14,24 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-public class linksCounter {
-	public static void main(String[] args) throws Exception {
+import io.github.haein147.properties.setNameSpace;
 
-		Configuration conf = new Configuration();
-		conf.set("textinputformat.record.delimiter", "</page>");
-		Job job = Job.getInstance(conf, "pagerank __ 1");
+public class linksCounter extends Configured implements Tool {
+    public static void main(String[] args) throws Exception {
+        ToolRunner.run(new linksCounter(), args);
+    }
+	@Override
+    public int run(String[] args) throws Exception {
+        Configuration conf = getConf();
+		Job job = Job.getInstance(conf, "__ 1");
 
 		job.setJarByClass(linksCounter.class);
-		job.setJobName("Page Rank - Example 2");
+		job.setJobName("Join");
 		job.setMapperClass(linksMapper.class);
 		job.setReducerClass(linksReducer.class);
 		job.setMapOutputKeyClass(Text.class);
@@ -38,6 +45,7 @@ public class linksCounter {
 		job.setNumReduceTasks(2);
 
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		return 0;
 	}
 
 	/*

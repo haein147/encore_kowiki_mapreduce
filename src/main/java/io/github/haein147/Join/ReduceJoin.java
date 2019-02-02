@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -14,9 +15,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
-public class ReduceJoin {
+import io.github.haein147.counter.linksCounter;
 
+public class ReduceJoin extends Configured implements Tool {
+    public static void main(String[] args) throws Exception {
+        ToolRunner.run(new ReduceJoin(), args);
+    }
 	/*
 	 * input key : 문서의 라인들이 하나하나 들어옴 input value : [from_id , title] output key :
 	 * (조인되는 키가 됨) - title 퀵_정렬 replaceAll("_", " "); output value : from_id
@@ -117,10 +124,12 @@ public class ReduceJoin {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void main(String[] args) throws Exception {
 
-		Configuration conf = new Configuration();
-		Job job = new Job(conf, "ReduceSideJoin");
+		@Override
+	    public int run(String[] args) throws Exception {
+	        Configuration conf = getConf();
+			Job job = Job.getInstance(conf, "__ 1");
+
 		job.setJarByClass(ReduceJoin.class);
 
 		// First dataset to Join
@@ -137,6 +146,7 @@ public class ReduceJoin {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		return 0;
 
 	}
 
