@@ -81,47 +81,43 @@ public class ReduceJoin extends Configured implements Tool {
 		}
 	}
 
-	public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
-		private ArrayList<Text> from_id = new ArrayList<Text>();
-		private ArrayList<Text> to_id = new ArrayList<Text>();
-		private static final Text EMPTY_TEXT = new Text("");
+public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
+		
 
+		@SuppressWarnings("null")
 		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
-			from_id.clear();
-			to_id.clear();
-
+			ArrayList<String> from_id = new ArrayList<String>();
+			String to_id = null;
+			String pagerank = "1.0	";
 			for (Text value : values) {
 				String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
 
 				if (parts[0].equals("from_")) {
-					from_id.add(new Text(parts[1].toString()));
+					from_id.add(parts[1]);
 				} else if (parts[0].equals("to_")) {
-					to_id.add(new Text(parts[1].toString()));
+					to_id = parts[1];
 				}
+				if (to_id==null) {
+					to_id = "null";
+                   } 
+			}
+	        boolean first = true;
+			for(String from : from_id) {
+				if(!first)	pagerank += ",";
+				pagerank += from;
+	            first = false;
 
-				System.out.println("# # # # output :" + to_id + "\t" + from_id);
+			}
+			if(to_id.equals("null")) {
+				System.out.printf("### to_id is null : %s", key);
+			}else {
+				context.write(new Text(to_id),new Text(pagerank));
 			}
 			
-			// output join
-			if (!from_id.isEmpty()) {
-				for (Text from : from_id) {
-					if (!to_id.isEmpty()) {
-						for (Text to : to_id) {
-							context.write(from, to);
-						}
-					} else {
-						context.write(from, EMPTY_TEXT);
-					}
-				}
-			} else {
-				for (Text to : to_id) {
-					context.write(EMPTY_TEXT, to);
-				}
-			}
-
 		}
 	}
+
 
 	@SuppressWarnings("deprecation")
 
