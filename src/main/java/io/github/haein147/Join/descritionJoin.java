@@ -24,98 +24,99 @@ import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.Index;
 
-
 public class descritionJoin extends Configured implements Tool {
-    public static void main(String[] args) throws Exception {
-        ToolRunner.run(new descritionJoin(), args);
-    }
-    // id
-    // { description : description }
+	public static void main(String[] args) throws Exception {
+		ToolRunner.run(new descritionJoin(), args);
+	}
+
+	// id
+	// { description : description }
 	public static class descriptoinTable extends Mapper<LongWritable, Text, Text, Text> {
 		private Text outKey = new Text();
 		private Text outValue = new Text();
 
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-	
+
 			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
 
 			outKey.set(parts[0]);
 			outValue.set(parts[1]);
 			context.write(outKey, new Text("description\t" + outValue));
-			
-			
+
 		}
 	}
-	//title	id	score
+
+	// title id score
 	public static class scoreTable extends Mapper<LongWritable, Text, Text, Text> {
 
 		private Text outKey = new Text();
 		private Text outValue = new Text();
-	
+
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
 			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
 			String v = parts[0] + "\t" + parts[2];
-			
-			outKey.set(parts[1]);//id
-			outValue.set(v);//title	score
+
+			outKey.set(parts[1]);// id
+			outValue.set(v);// title score
 			context.write(outKey, new Text("score\t" + outValue));
 
 		}
 	}
 
-public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
+	public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
 
 		@SuppressWarnings("null")
 		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-
+			Double sc = 0.0;
 			String title = "";
 			String desc = "";
 			String score = "";
 			for (Text value : values) {
 				String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
-				if(parts[0] != null) {
 					if (parts[0].equals("description")) {
 						desc = parts[1];
 					} else if (parts[0].equals("score")) {
-						title = parts[1].replaceAll("_", " ");
-						score = parts[2];
+						if(parts[2] != null || !parts[2].isEmpty()) {
+							title = parts[1].replaceAll("_", " ");
+							score = parts[2].replaceAll(" ", "");
+							sc = (Double) Double.parseDouble(score);
+						}else {
+							return;
+						}
+
+						}
 					}
-				}else {
-					return;
-				}
-			}
+						
 			Gson gson = new Gson();
 			resultDto jsonData = gson.fromJson(desc, resultDto.class);
 			String desFromJson = jsonData.getDescription();
 			resultDto dto = new resultDto();
 			dto.setTitle(title);
-			dto.setScore(score);
+			dto.setScore(sc);
 			dto.setDescription(desFromJson);
 			String jsonHtml = gson.toJson(dto);
 			
 			JestClientFactory factory = new JestClientFactory();
 			factory.setHttpClientConfig(new HttpClientConfig
 	                .Builder("http://elastic.pslicore.io:9200")
-	                .multiThreaded(true)
 	                .build());
 			JestClient client = factory.getObject();
-			Index index = new Index.Builder(jsonHtml).index("pagerank").type("page").build();
-			System.out.println(client.execute(index));
-
+			Index index = new Index.Builder(jsonHtml).index("pagerank_wiki").type("page").build();
+			client.execute(index);
+			
 			context.write(new Text(title),new Text(score));
 			
 			
 		}
 	}
 
-
 	@SuppressWarnings("deprecation")
 
-		@Override
-	    public int run(String[] args) throws Exception {
-	        Configuration conf = getConf();
-			Job job = Job.getInstance(conf, "Join to description and score");
+	@Override
+	public int run(String[] args) throws Exception {
+		Configuration conf = getConf();
+		Job job = Job.getInstance(conf, "Join to description and score");
 
 		job.setJarByClass(descritionJoin.class);
 		job.setUserClassesTakesPrecedence(true);
@@ -133,7 +134,7 @@ public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
 
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
-		
+
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 		return 0;
 
