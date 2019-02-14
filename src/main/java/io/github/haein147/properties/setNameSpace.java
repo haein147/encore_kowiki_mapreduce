@@ -48,7 +48,7 @@ public class setNameSpace extends Configured implements Tool {
 
 		TextInputFormat.addInputPath(job, new Path(args[0]));
 		TextOutputFormat.setOutputPath(job, new Path(args[1]));
-        job.addCacheFile(new URI("/user/mentee/haein/ns.properties#ns"));
+        job.addCacheFile(new URI("/user/mentee/input/redirect.tsv#redirect"));
 		job.setNumReduceTasks(8);
 
 		job.waitForCompletion(true);
@@ -59,20 +59,21 @@ public class setNameSpace extends Configured implements Tool {
         Map<String, String> nsAndTitle = new HashMap<>();
         private Text outKey = new Text();
 		private Text outValue = new Text();
+		
 		@Override
 		public void setup(Context context) throws IOException, InterruptedException{
-			File f = new File("ns");
+			File f = new File("redirect");
 	        FileInputStream fis = new FileInputStream(f);
             BufferedReader in = new BufferedReader(new InputStreamReader(fis));
             
-            for (String line : IOUtils.readLines(in)) {
+  /*          for (String line : IOUtils.readLines(in)) {
             	//-1=특수
             	//0=\s
             	String[] split = line.split("=");
                 String ns = split[0];
                 String name = split[1];
                 nsAndTitle.put(ns, name);
-			}
+			}*/
 		}
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {

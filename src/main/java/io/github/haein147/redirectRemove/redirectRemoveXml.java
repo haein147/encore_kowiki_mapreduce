@@ -28,6 +28,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
  * */
 public class redirectRemoveXml {
+	//id	title	text
    public static class XmlMapper extends Mapper<Object, Text, Text, Text> {
       
       public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
@@ -37,9 +38,9 @@ public class redirectRemoveXml {
          context.write(new Text(id), new Text("Xml\t" + title));
       }
    }
-
+   //
    public static class ReMapper extends Mapper<Object, Text, Text, Text> {
-         
+         //id	title	namespace
          public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
             String title = parts[2];
@@ -47,7 +48,7 @@ public class redirectRemoveXml {
             context.write(new Text(id), new Text("Redirect\t" + title));
          }
    }
-
+   //id	title
    public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
    
          public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {

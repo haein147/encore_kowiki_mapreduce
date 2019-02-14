@@ -47,17 +47,18 @@
 					</filters>
 				</configuration>
 			</plugin>
+
 		</plugins>
 
 
-    <resources>
-      <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>ns.properties</include>
-                </includes>
-            </resource>
-    </resources>   
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>render-template.html</include>
+				</includes>
+			</resource>
+		</resources>
 
 
 
@@ -66,7 +67,7 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-client</artifactId>
-			<version>2.8.0</version>
+			<version>2.6.0-cdh5.16.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
@@ -74,12 +75,45 @@
 			<version>1.10.3</version>
 		</dependency>
 
+		<!-- sweble -->
+		<dependency>
+			<groupId>de.fau.cs.osr.utils</groupId>
+			<artifactId>utils</artifactId>
+			<version>3.0.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sweble.wikitext</groupId>
+			<artifactId>swc-parser-lazy</artifactId>
+			<version>3.1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sweble.wikitext</groupId>
+			<artifactId>swc-engine</artifactId>
+			<version>3.1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.searchbox</groupId>
+			<artifactId>jest</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+		
+		
 	</dependencies>
-
+  <repositories>
+    <repository>
+      <id>cloudera</id>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+    </repository>
+  </repositories>
 	<profiles>
 		<profile>
 			<properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
+				<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 			</properties>
 		</profile>
 	</profiles>
