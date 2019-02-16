@@ -59,7 +59,7 @@ public class App extends Configured implements Tool {
 		TextInputFormat.addInputPath(job, new Path(args[0]));
 		TextOutputFormat.setOutputPath(job, new Path(args[1]));
 
-		job.setNumReduceTasks(2);
+		job.setNumReduceTasks(100);
 
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 		return 0;
@@ -86,66 +86,10 @@ public class App extends Configured implements Tool {
 		    // Compile the retrieved page
 		    EngProcessedPage cp = engine.postprocess(pageId, wikiText, null);
 
-			if (renderHtml)
-			{
-				String ourHtml = HtmlRenderer.print(new MyRendererCallback(), config, pageTitle, cp.getPage());
-				String html = "<html><body>"+ ourHtml +"</body>"+"</html>";
-
-				return html;
-			}
-			else
-			{
-				TextConverter p = new TextConverter(config, wrapCol);
-				return (String) p.go(cp.getPage());
-			}
+			TextConverter p = new TextConverter(config, wrapCol);
+			return (String) p.go(cp.getPage());
 		}
-
-		public static final class MyRendererCallback
-				implements
-					HtmlRendererCallback
-		{
-			protected static final String LOCAL_URL = "";
-
-			@Override
-			public boolean resourceExists(PageTitle target)
-			{
-				// TODO: Add proper check
-				return false;
-			}
-
-			@Override
-			public MediaInfo getMediaInfo(String title, int width, int height)
-			{
-				// TODO: Return proper media info
-				return null;
-			}
-
-			@Override
-			public String makeUrl(PageTitle target)
-			{
-				String page = UrlEncoding.WIKI.encode(target.getNormalizedFullTitle());
-				String f = target.getFragment();
-				String url = page;
-				if (f != null && !f.isEmpty())
-					url = page + "#" + UrlEncoding.WIKI.encode(f);
-				return LOCAL_URL + "/" + url;
-			}
-
-			@Override
-			public String makeUrl(WtUrl target)
-			{
-				if (target.getProtocol() == "")
-					return target.getPath();
-				return target.getProtocol() + ":" + target.getPath();
-			}
-
-			@Override
-			public String makeUrlMissingTarget(String path)
-			{
-				return LOCAL_URL + "?title=" + path + "&amp;action=edit&amp;redlink=1";
-
-			}
-		}
+	
 	
 
 		@Override
@@ -159,38 +103,39 @@ public class App extends Configured implements Tool {
 			
 			String title = wikitext.select("page > title").text();
 			String id = wikitext.select("page > id").text();
+			String ns = wikitext.select("page > ns").text();
 
 			wikitext.outputSettings(new Document.OutputSettings().prettyPrint(false));
 			String wiki = "";
 			String html = null;
-
-			try {
-				for(TextNode node : wikitext.select("text").get(0).textNodes()){
-				    wiki = wiki + node + "\n\n";
-				}
-				wiki = StringEscapeUtils.unescapeXml(wiki);
-				html = convertWikiText(title, wiki, false);
-				html = html.replaceAll("\\[\\[파일:.*\\]\\]", "");
-
-			}catch(IndexOutOfBoundsException e) {
-				System.out.println("### IndexOutOfBoundsException : " + title);
-			}catch (LinkTargetException e) {
-				e.printStackTrace();
-			}catch (EngineException e) {
-				e.printStackTrace();
-			}catch (NullPointerException e) {
-				e.printStackTrace();
-			}
 			
-			Gson gson = new Gson();
-			tableDto dto = new tableDto();
-			dto.setDescription(html);
-			String jsonHtml = gson.toJson(dto);
-			try {
-				context.write(new Text(id), new Text(jsonHtml));
+			if (ns.equals("0")) {
+				try {
+					for(TextNode node : wikitext.select("text").get(0).textNodes()){
+					    wiki = wiki + node + "\n\n";
+					}
+					wiki = StringEscapeUtils.unescapeXml(wiki);
+					html = convertWikiText(title, wiki, false);
+					html = html.replaceAll("\\[\\[파일:.*\\]\\]", "");
+					Gson gson = new Gson();
+					tableDto dto = new tableDto();
+					dto.setDescription(html);
+					dto.setTitle(title);
+					String jsonHtml = gson.toJson(dto);
+					
+					context.write(new Text(id), new Text(jsonHtml));
 
-			} catch (NullPointerException e) {
-				System.out.println("######title   " + title + "######text    " + html);
+				}catch(IndexOutOfBoundsException e) {
+					System.out.println("### IndexOutOfBoundsException : " + title);
+				}catch (LinkTargetException e) {
+					e.printStackTrace();
+				}catch (EngineException e) {
+					e.printStackTrace();
+				}catch (NullPointerException e) {
+					e.printStackTrace();
+				}
+			}else {
+				return;
 			}
 
 		}

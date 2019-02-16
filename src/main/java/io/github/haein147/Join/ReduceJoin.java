@@ -28,6 +28,7 @@ public class ReduceJoin extends Configured implements Tool {
 	 * input key : 문서의 라인들이 하나하나 들어옴 input value : [from_id , title] output key :
 	 * (조인되는 키가 됨) - title 퀵_정렬 replaceAll("_", " "); output value : from_id
 	 */
+    //	setnamespace
 	public static class SqlMapper extends Mapper<LongWritable, Text, Text, Text> {
 		private Text outKey = new Text();
 		private Text outValue = new Text();
@@ -55,6 +56,7 @@ public class ReduceJoin extends Configured implements Tool {
 	 * input key : 문서의 라인들이 하나하나 들어옴 input value : [to_id , title] output key :
 	 * (조인되는 키가 됨) - title 퀵 정렬 output value : to_id
 	 */
+	// 	removeXML
 	public static class MetaMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 		private Text outKey = new Text();
@@ -89,30 +91,27 @@ public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
 
 			ArrayList<String> from_id = new ArrayList<String>();
 			String to_id = null;
-			String pagerank = "1.0	";
 			for (Text value : values) {
 				String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
-
+				// title 에 해당하는 to_id 는 무조건 하나
+				// from_id 는 여러개가 될수도 없을 수도 있다.
 				if (parts[0].equals("from_")) {
 					from_id.add(parts[1]);
 				} else if (parts[0].equals("to_")) {
-					to_id = parts[1];
+					to_id = (parts[1]);
 				}
 				if (to_id==null) {
 					to_id = "null";
                    } 
 			}
-	        boolean first = true;
-			for(String from : from_id) {
-				if(!first)	pagerank += ",";
-				pagerank += from;
-	            first = false;
 
-			}
 			if(to_id.equals("null")) {
 				System.out.printf("### to_id is null : %s", key);
+				
 			}else {
-				context.write(new Text(to_id),new Text(pagerank));
+				for(String f : from_id) {
+					context.write(new Text(f),new Text(to_id));
+				}
 			}
 			
 		}

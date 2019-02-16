@@ -18,6 +18,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import com.google.gson.Gson;
+import com.vdurmont.emoji.EmojiParser;
 
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -30,7 +31,8 @@ public class descritionJoin extends Configured implements Tool {
 	}
 
 	// id
-	// { description : description }
+	// { title : title,
+	// 	description : description }
 	public static class descriptoinTable extends Mapper<LongWritable, Text, Text, Text> {
 		private Text outKey = new Text();
 		private Text outValue = new Text();
@@ -39,14 +41,14 @@ public class descritionJoin extends Configured implements Tool {
 
 			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
 
-			outKey.set(parts[0]);
-			outValue.set(parts[1]);
+			outKey.set(parts[0]);//id
+			outValue.set(parts[1]);//{}
 			context.write(outKey, new Text("description\t" + outValue));
 
 		}
 	}
 
-	// title id score
+	// from_id	rank	to_id...
 	public static class scoreTable extends Mapper<LongWritable, Text, Text, Text> {
 
 		private Text outKey = new Text();
@@ -55,15 +57,15 @@ public class descritionJoin extends Configured implements Tool {
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
 			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
-			String v = parts[0] + "\t" + parts[2];
 
-			outKey.set(parts[1]);// id
-			outValue.set(v);// title score
+			outKey.set(parts[0]);// id
+			outValue.set(parts[1]);//rank
 			context.write(outKey, new Text("score\t" + outValue));
 
 		}
 	}
 
+	//id	(score	rank),(description	{title:* , description:* }), ()...
 	public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
 
 		@SuppressWarnings("null")
@@ -77,37 +79,39 @@ public class descritionJoin extends Configured implements Tool {
 					if (parts[0].equals("description")) {
 						desc = parts[1];
 					} else if (parts[0].equals("score")) {
-						if(parts[2] != null || !parts[2].isEmpty()) {
-							title = parts[1].replaceAll("_", " ");
-							score = parts[2].replaceAll(" ", "");
-							sc = (Double) Double.parseDouble(score);
-						}else {
-							return;
-						}
-
-						}
-					}
 						
-			Gson gson = new Gson();
-			resultDto jsonData = gson.fromJson(desc, resultDto.class);
-			String desFromJson = jsonData.getDescription();
-			resultDto dto = new resultDto();
-			dto.setTitle(title);
-			dto.setScore(sc);
-			dto.setDescription(desFromJson);
-			String jsonHtml = gson.toJson(dto);
-			
-			JestClientFactory factory = new JestClientFactory();
-			factory.setHttpClientConfig(new HttpClientConfig
-	                .Builder("http://elastic.pslicore.io:9200")
-	                .build());
-			JestClient client = factory.getObject();
-			Index index = new Index.Builder(jsonHtml).index("pagerank_wiki").type("page").build();
-			client.execute(index);
-			
-			context.write(new Text(title),new Text(score));
-			
-			
+						score = parts[2];
+						sc = (Double) Double.parseDouble(score);
+					}else {
+						return;
+					}
+				}
+
+			if(desc!=null && score!=null) {
+			try {
+				Gson gson = new Gson();
+				resultDto jsonData = gson.fromJson(desc, resultDto.class);
+				String titleFronJson = jsonData.getTitle();
+				String desFromJson = jsonData.getDescription();
+				
+				resultDto dto = new resultDto();
+				dto.setTitle(EmojiParser.removeAllEmojis(titleFronJson));
+				dto.setScore(sc);
+				dto.setDescription(EmojiParser.removeAllEmojis(desFromJson));
+				String jsonHtml = gson.toJson(dto);
+				
+				JestClientFactory factory = new JestClientFactory();
+				factory.setHttpClientConfig(new HttpClientConfig
+		                .Builder("http://elastic.pslicore.io:9200")
+		                .build());
+				JestClient client = factory.getObject();
+				Index index = new Index.Builder(jsonHtml).index("pagerank_wiki").type("page").build();
+				client.execute(index);
+			}catch(Exception e){
+				e.printStackTrace();
+				context.write(new Text(title),new Text(score));
+			}
+			}
 		}
 	}
 
@@ -134,6 +138,7 @@ public class descritionJoin extends Configured implements Tool {
 
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
+		job.setNumReduceTasks(100);
 
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 		return 0;

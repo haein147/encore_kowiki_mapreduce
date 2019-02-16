@@ -28,7 +28,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
  * */
 public class redirectRemoveXml {
-	//id	title	text
+	//id	{des : des}
    public static class XmlMapper extends Mapper<Object, Text, Text, Text> {
       
       public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
