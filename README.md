@@ -28,6 +28,7 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.counter.xmlPa
 
 <div>
   <img src="https://user-images.githubusercontent.com/43582223/52904613-bcb23680-3271-11e9-97c1-7cddf9faa6e0.png" width="90%"></img>
+ <img src="https://user-images.githubusercontent.com/43582223/52904938-06048500-3276-11e9-853c-57a1a2887339.png" width="90%"></img>
 </div>
 
 <hr />
