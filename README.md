@@ -27,8 +27,8 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.counter.xmlPa
 ```
 
 <div>
-  <img width="50%" align="middle" src="https://user-images.githubusercontent.com/43582223/52904613-bcb23680-3271-11e9-97c1-7cddf9faa6e0.png"></img>
- <img  width="50%" align="middle" src="https://user-images.githubusercontent.com/43582223/52904938-06048500-3276-11e9-853c-57a1a2887339.png"></img>
+  <img width="50%" src="https://user-images.githubusercontent.com/43582223/52904613-bcb23680-3271-11e9-97c1-7cddf9faa6e0.png"></img>
+ <img  width="50%" src="https://user-images.githubusercontent.com/43582223/52904938-06048500-3276-11e9-853c-57a1a2887339.png"></img>
 </div>
 
 <hr />
@@ -55,8 +55,9 @@ yum install jq
 curl https://dumps.wikimedia.org/kowiki/20190120/kowiki-20190120-siteinfo-namespaces.json.gz \
 |zcat |jq -r '.query.namespaces | to_entries[] | .key +"\t"+ .value["*"]' 
 ```
-<img src="https://user-images.githubusercontent.com/43582223/52904148-3bf03c00-326b-11e9-91c3-e5518777ec69.png" width="90%"></img>
-
+<div>
+<img  width="50%" src="https://user-images.githubusercontent.com/43582223/52904148-3bf03c00-326b-11e9-91c3-e5518777ec69.png"></img>
+</div>
 ```
 yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.properties.setNameSpace \
 /user/mentee/input/pagelinks.tsv \
@@ -76,3 +77,4 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.properties.se
 /user/mentee/input/redirect.tsv \
 /user/mentee/haein/setnamespce_redirect 
 ```
+<img src="https://user-images.githubusercontent.com/43582223/52905111-b2e00180-3278-11e9-872a-0dd6c70a59e5.png"></img>
