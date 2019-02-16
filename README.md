@@ -76,5 +76,11 @@ gunzip kowiki-20190101-redirect.sql.gz
 yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.properties.setNameSpace \
 /user/mentee/input/redirect.tsv \
 /user/mentee/haein/setnamespce_redirect 
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.properties.setNameSpace\
+/user/mentee/input/redirect.tsv \
+/user/mentee/haein/setnamespce_redirect
 ```
-<img src="https://user-images.githubusercontent.com/43582223/52905111-b2e00180-3278-11e9-872a-0dd6c70a59e5.png"></img>
+<div>
+<img width="50%" s<img width="50%" src="https://user-images.githubusercontent.com/43582223/52905111-b2e00180-3278-11e9-872a-0dd6c70a59e5.png"></img>
+<img width="50%" s<img width="50%" src="https://user-images.githubusercontent.com/43582223/52905154-78c32f80-3279-11e9-8511-e8ce3fd791bd.png"></img>
+</div>
