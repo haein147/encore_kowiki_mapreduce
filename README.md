@@ -34,7 +34,7 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.counter.xmlPa
 <hr />
 
 
-## 2. from_id와 to_id로 조인해주기 위해 정제
+## 2. 정제
 - from_id들이 있는 tsv파일을 dump 받는다.
 - dump 받은 파일을 MYSQL에 넣는다.
 - pl_id 와 pl_title, namepace 만 뽑아낸다.
@@ -97,7 +97,20 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.redirectRemov
 /user/mentee/haein/setnamespce_redirect_1 \
 /user/mentee/haein/redirect_remove_XML
 ```
-> setnamespace : 40604591
-setnamespace_redirect : 565588
-redirect_remove_TSV : 40038831
 
+> setnamespace : 40604591
+> setnamespace_redirect : 565588
+> redirect_remove_TSV : 40038831
+
+> xmlparsing : 1004322
+> setnamespace_redirect : 565588
+> redirect_remove_XML : 439033
+
+## 4. from_id to_id 를 만들고 pagerank 적용
+
+- from_id to_id 의 쌍으로 나올 수 있도록 조인
+```
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.Join.ReduceJoin /user/mentee/haein/redirect_remove_TSV /user/mentee/haein/redirect_remove_XML /user/mentee/haein/from_to_Join
+```
+- from_id 와 to_id의 list들로 뽑아낸다. 
+- 하나의 문서가 어떤 문서 안에 포함되어있는지를 점수로 매겨주어야한다.
