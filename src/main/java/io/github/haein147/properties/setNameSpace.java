@@ -48,7 +48,7 @@ public class setNameSpace extends Configured implements Tool {
 
 		TextInputFormat.addInputPath(job, new Path(args[0]));
 		TextOutputFormat.setOutputPath(job, new Path(args[1]));
-        job.addCacheFile(new URI("/user/mentee/input/redirect.tsv#redirect"));
+        //job.addCacheFile(new URI("/user/mentee/haein/ns.properties#ns"));
 		job.setNumReduceTasks(8);
 
 		job.waitForCompletion(true);
@@ -56,46 +56,39 @@ public class setNameSpace extends Configured implements Tool {
 	}
 	public static class nsMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String fromLink = new String();
-        Map<String, String> nsAndTitle = new HashMap<>();
+        Map<String, String> nsAndTitle = new HashMap<String, String>();
         private Text outKey = new Text();
 		private Text outValue = new Text();
 		
-		@Override
+		/*@Override
 		public void setup(Context context) throws IOException, InterruptedException{
-			File f = new File("redirect");
-	        FileInputStream fis = new FileInputStream(f);
-            BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+			File ns_file = new File("ns");
+			FileInputStream fis = new FileInputStream(ns_file);
+			BufferedReader nsdata = new BufferedReader(new InputStreamReader(fis));
             
-  /*          for (String line : IOUtils.readLines(in)) {
+            for (String line : IOUtils.readLines(nsdata)) {
             	//-1=특수
             	//0=\s
             	String[] split = line.split("=");
                 String ns = split[0];
                 String name = split[1];
                 nsAndTitle.put(ns, name);
-			}*/
-		}
+			}
+		}*/
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 			
 			String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
 
 			//123	환영합니다	11	-> 123	틀토론:환영합니다
-			//142	환영합니다	2	-> 143	사용자:환영합니다 
+			//424129  !Kheis_Local_Municipality       0
+			//from_id	to_title
 			String id = parts[0];
 			String title = parts[1];
 			String namespace = parts[2];
-			System.out.printf("##### : %s, %s, %s",id,title,namespace);
-			String ns = nsAndTitle.get(namespace);
-			if(ns.equals(" ")){
-				outKey.set(id);
-				outValue.set(title);
-			}else {
-				//사용자:환영합니다
-				outKey.set(id);
-				outValue.set(ns + ":" + title);
+			if(namespace.equals("0")){
+				context.write(new Text(id), new Text(title));
 			}
-			context.write(outKey, outValue);
 		}
 	}
 

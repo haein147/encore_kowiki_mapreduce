@@ -66,7 +66,7 @@ public class descritionJoin extends Configured implements Tool {
 	}
 
 	//id	(score	rank),(description	{title:* , description:* }), ()...
-	public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
+	public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {	
 
 		@SuppressWarnings("null")
 		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -80,7 +80,7 @@ public class descritionJoin extends Configured implements Tool {
 						desc = parts[1];
 					} else if (parts[0].equals("score")) {
 						
-						score = parts[2];
+						score = parts[1];
 						sc = (Double) Double.parseDouble(score);
 					}else {
 						return;

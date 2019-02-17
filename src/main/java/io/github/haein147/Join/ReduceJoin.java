@@ -26,7 +26,7 @@ public class ReduceJoin extends Configured implements Tool {
     }
 	/*
 	 * input key : 문서의 라인들이 하나하나 들어옴 input value : [from_id , title] output key :
-	 * (조인되는 키가 됨) - title 퀵_정렬 replaceAll("_", " "); output value : from_id
+		 * (조인되는 키가 됨) - title 퀵_정렬 replaceAll("_", " "); output value : from_id
 	 */
     //	setnamespace
 	public static class SqlMapper extends Mapper<LongWritable, Text, Text, Text> {

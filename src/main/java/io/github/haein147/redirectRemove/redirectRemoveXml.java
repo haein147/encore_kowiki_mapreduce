@@ -1,6 +1,7 @@
 package io.github.haein147.redirectRemove;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -40,10 +41,10 @@ public class redirectRemoveXml {
    }
    //
    public static class ReMapper extends Mapper<Object, Text, Text, Text> {
-         //id	title	namespace
+         //id	title
          public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String[] parts = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
-            String title = parts[2];
+            String title = parts[1];
             String id = parts[0];
             context.write(new Text(id), new Text("Redirect\t" + title));
          }
@@ -52,21 +53,23 @@ public class redirectRemoveXml {
    public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
    
          public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            String title = null;
+ 			ArrayList<String> title = new ArrayList<String>();
             String retitle = null;
                for (Text value : values) {
                   String parts[] = StringUtils.splitPreserveAllTokens(value.toString(), "\t");
                   if (parts[0].equals("Xml")) {
-                     title = parts[1];
+                	  title.add(parts[1]);
                   } else if(parts[0].equals("Redirect")) {
-                     retitle = parts[1];
+                	  return;
                   }
-               }   
-               if (retitle == null ) {
-                  context.write(key, new Text(title));
+               }
+               for(String t : title) {
+                   context.write(key, new Text(t));
+               }
+
                }
          }
-   }
+  
 
 
    @SuppressWarnings("deprecation")

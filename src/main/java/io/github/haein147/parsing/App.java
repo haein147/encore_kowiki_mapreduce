@@ -19,6 +19,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
+import org.jsoup.select.Elements;
 import org.sweble.wikitext.engine.EngineException;
 import org.sweble.wikitext.engine.PageId;
 import org.sweble.wikitext.engine.PageTitle;
@@ -34,6 +35,7 @@ import org.sweble.wikitext.parser.nodes.WtUrl;
 import org.sweble.wikitext.parser.parser.LinkTargetException;
 
 import com.google.gson.Gson;
+import com.sun.xml.bind.v2.model.core.Element;
 
 
 
@@ -97,14 +99,14 @@ public class App extends Configured implements Tool {
 			
 			String line = new String(value.toString());
 			String xml = line.replaceAll("^.*<page>", "<page>") + "</page>";
-			
+			boolean re = false;
 			
 			Document wikitext = Jsoup.parse(xml, "", Parser.xmlParser());
 			
 			String title = wikitext.select("page > title").text();
 			String id = wikitext.select("page > id").text();
 			String ns = wikitext.select("page > ns").text();
-
+			
 			wikitext.outputSettings(new Document.OutputSettings().prettyPrint(false));
 			String wiki = "";
 			String html = null;
