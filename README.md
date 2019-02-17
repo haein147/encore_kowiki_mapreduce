@@ -84,3 +84,20 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.properties.se
 <img width="50%" s<img width="50%" src="https://user-images.githubusercontent.com/43582223/52905111-b2e00180-3278-11e9-872a-0dd6c70a59e5.png"></img>
 <img width="50%" s<img width="50%" src="https://user-images.githubusercontent.com/43582223/52905154-78c32f80-3279-11e9-8511-e8ce3fd791bd.png"></img>
 </div>
+
+- xml 파일과 tsv 파일을 redirect 의 to_id 와 같으면 빼준다.
+```
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.redirectRemove.redirectRemoveXml \
+/user/mentee/haein/setnamespace \
+/user/mentee/haein/setnamespce_redirect_1 \
+/user/mentee/haein/redirect_remove_TSV
+
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.redirectRemove.redirectRemoveXml\
+/user/mentee/haein/xmlparsing \
+/user/mentee/haein/setnamespce_redirect_1 \
+/user/mentee/haein/redirect_remove_XML
+```
+> setnamespace : 40604591
+setnamespace_redirect : 565588
+redirect_remove_TSV : 40038831
+
