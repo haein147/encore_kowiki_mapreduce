@@ -91,13 +91,19 @@ public class descritionJoin extends Configured implements Tool {
 			try {
 				Gson gson = new Gson();
 				resultDto jsonData = gson.fromJson(desc, resultDto.class);
-				String titleFronJson = jsonData.getTitle();
+				String titleFromJson = jsonData.getTitle();
 				String desFromJson = jsonData.getDescription();
+				Double pvFromJson = jsonData.getPageview();
+				Double editFromJson = jsonData.getEditcount();
+				Double descSize = (double) desFromJson.length();
 				
 				resultDto dto = new resultDto();
-				dto.setTitle(EmojiParser.removeAllEmojis(titleFronJson));
+				dto.setTitle(EmojiParser.removeAllEmojis(titleFromJson));
 				dto.setScore(sc);
 				dto.setDescription(EmojiParser.removeAllEmojis(desFromJson));
+				dto.setPageview(pvFromJson);
+				dto.setEditcount(editFromJson);
+				dto.setDescriptionsize(descSize);
 				String jsonHtml = gson.toJson(dto);
 				
 				JestClientFactory factory = new JestClientFactory();
@@ -105,7 +111,7 @@ public class descritionJoin extends Configured implements Tool {
 		                .Builder("http://elastic.pslicore.io:9200")
 		                .build());
 				JestClient client = factory.getObject();
-				Index index = new Index.Builder(jsonHtml).index("pagerank_wiki").type("page").build();
+				Index index = new Index.Builder(jsonHtml).index("pslicore").type("page").build();
 				client.execute(index);
 			}catch(Exception e){
 				e.printStackTrace();

@@ -18,7 +18,6 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import io.github.haein147.counter.linksCounter;
 
 public class ReduceJoin extends Configured implements Tool {
     public static void main(String[] args) throws Exception {
@@ -103,6 +102,9 @@ public static class ReduceJoinReducer extends Reducer<Text, Text, Text, Text> {
 				if (to_id==null) {
 					to_id = "null";
                    } 
+				if(from_id==null) {
+					from_id.add("null");
+				}
 			}
 
 			if(to_id.equals("null")) {
