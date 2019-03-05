@@ -2,7 +2,16 @@
 
 # PageRank 알고리즘 적용을 위한 Mapreduce
 
-### wikipedia 데이터를 알고리즘을 적용하기 위해 정제하고 elasticsearch 엔진에 넣는다
+## 클래스 설명 
+1. wikipedia 데이터를 알고리즘을 적용하기 위해 정제하고 정제,정제한다.
+2. pagerank를 재귀적으로 돌리기 위해 변화율이 10% 미만이 되도록 돌려준다. (여기서는 10번 이내로 잡음)
+3. elasticsearch 엔진에 넣는다.
+
+## 구축 환경
+ - aws light sail로 hadoop cloudera 서버를 구축(비용 절감을 위해)
+ - 32GB RAM, 8v CPU, 640GB SSD 4대
+ - elasticsearch 의 엔진도 light sail 로 구축
+ - 4GB RAM, 2V CPU, 80GB SSD 2대
 
 ## 1. XML page 데이터를 정제
 ```
@@ -110,7 +119,43 @@ yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.redirectRemov
 
 - from_id to_id 의 쌍으로 나올 수 있도록 조인
 ```
-yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.Join.ReduceJoin /user/mentee/haein/redirect_remove_TSV /user/mentee/haein/redirect_remove_XML /user/mentee/haein/from_to_Join
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.Join.ReduceJoin\
+/user/mentee/haein/redirect_remove_TSV \
+/user/mentee/haein/redirect_remove_XML \
+/user/mentee/haein/from_to_Join
 ```
+
 - from_id 와 to_id의 list들로 뽑아낸다. 
 - 하나의 문서가 어떤 문서 안에 포함되어있는지를 점수로 매겨주어야한다.
+- fron_id 1.0 {to_id1, to_id2, to_id3.. }
+
+```
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.PageRank.sortToPagerank \
+/user/mentee/haein/from_to_Join \
+/user/mentee/haein/iter00
+```
+
+- **pagerank circulate 를 실행(알고리즘 공식을 코드로 구현함)**
+- **PageRank of A = 0.15 + 0.85 * ( PageRank(B)/outgoing links(B) + PageRank(…)/outgoing link(…) )**
+- run 을 10으로 잡고 진행 -> 점수를 보고 변화율이 10% 미만일때 중지
+```
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.PageRank.PageRank \
+/user/mentee/haein/iter00
+```
+<img src="https://user-images.githubusercontent.com/43582223/53784738-97077b80-3f59-11e9-9195-5dbb015815b9.png" ></img>
+
+## pagerank 가 적용된 점수들과 다른 피쳐들과 조인해서 elastic search에 서빙
+
+- pageview, editcount, desctiption size를 뽑아낸다.
+- rest client인 Jest API를 써서 elasticsearch로 바로 서빙
+- elasticsearch에는 **nori 형태소 분석기**를 사용해서 인덱스를 생성
+- 인덱스 생성시 새로 스코어링 한 공식을 script score로 적용
+<img src="https://user-images.githubusercontent.com/43582223/53785199-09c52680-3f5b-11e9-90da-dae509285788.png" ></img>
+
+```
+yarn jar haein147-0.0.1-SNAPSHOT-executable.jar io.github.haein147.Join.descriptionJoin \
+/user/mentee/haein/iter10 \
+/user/mentee/haein/otherfeatures \ 
+/user/mentee/haein/elastic
+```
+
